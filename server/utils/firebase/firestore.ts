@@ -1,16 +1,18 @@
+// import firestore from firebase-admin
 import { getFirestore } from "firebase-admin/firestore";
 
+// create a firestore instance
 const db = getFirestore();
 
-// function to get all the document from a collection in firestore
+// get all the docs in a collection
 async function getDocs<T>({ collectionName }: { collectionName: string }) {
   try {
     const snapshot = await db.collection(collectionName).get();
     const data = snapshot.docs.map((doc) => {
       return {
         id: doc.id,
-        ...(doc.data() as T),
-      };
+        ...doc.data(),
+      } as T;
     });
     return {
       data,
@@ -20,53 +22,53 @@ async function getDocs<T>({ collectionName }: { collectionName: string }) {
   }
 }
 
-// function to get a single doc using the id
+// get a single in a collection using the doc id
 async function getDoc<T>({
   collectionName,
-  docId,
+  id,
 }: {
   collectionName: string;
-  docId: string;
+  id: string;
 }) {
   try {
-    const doc = await db.collection(collectionName).doc(docId).get();
-    if (!doc.exists)
-      throw new Error(`Document with ID ${docId} does not exist`);
+    const doc = await db.collection(collectionName).doc(id).get();
+    if (!doc.exists) {
+      throw new Error(`Doc with the id ${id} is not found`);
+    }
     return {
       data: {
         id: doc.id,
-        ...(doc.data() as T),
-      },
+        ...doc.data(),
+      } as T,
     };
   } catch (error) {
-    return { error };
+    return {
+      error,
+    };
   }
 }
 
-// function to create a doc in firestore
+// create a doc in a collection with or without an id
 async function createDoc({
   collectionName,
   data,
-  docId,
+  id,
 }: {
   collectionName: string;
   data: any;
-  docId?: string;
+  id?: string;
 }) {
   try {
-    const docRef = docId
-      ? db.collection(collectionName).doc(docId)
+    const docRef = id
+      ? db.collection(collectionName).doc(id)
       : db.collection(collectionName).doc();
-
     await docRef.set({
       ...data,
       createdAt: new Date().toISOString(),
     });
-
     return {
       data: {
-        id: docRef.id,
-        ...data,
+        message: "Document successfully created",
       },
     };
   } catch (error) {
@@ -76,44 +78,48 @@ async function createDoc({
   }
 }
 
-// updata a doc in firestore
-async function updateDoc<T>({
+// update a doc in a collection using the doc id
+async function updateDoc({
   collectionName,
-  docId,
+  id,
   data,
 }: {
   collectionName: string;
-  docId: string;
+  id: string;
   data: any;
 }) {
   try {
-    const docRef = db.collection(collectionName).doc(docId);
-    await docRef.update(data);
-    const doc = await docRef.get();
+    const docRef = db.collection(collectionName).doc(id);
+    await docRef.update({
+      ...data,
+      updatedAt: new Date().toISOString(),
+    });
     return {
       data: {
-        id: docRef.id,
-        ...(doc.data() as T),
+        message: "Document successfully updated",
       },
     };
-  } catch (error) {}
+  } catch (error) {
+    return {
+      error,
+    };
+  }
 }
 
-// function to delete from firestore
+// delete a doc in a collection using the doc id
 async function deleteDoc({
   collectionName,
-  docId,
+  id,
 }: {
   collectionName: string;
-  docId: string;
+  id: string;
 }) {
   try {
-    const docRef = db.collection(collectionName).doc(docId);
+    const docRef = db.collection(collectionName).doc(id);
     await docRef.delete();
     return {
       data: {
-        id: docRef.id,
-        deleted: true,
+        message: "Document successfully deleted",
       },
     };
   } catch (error) {
@@ -124,9 +130,9 @@ async function deleteDoc({
 }
 
 export default {
-  getDocs,
-  getDoc,
   createDoc,
-  updateDoc,
   deleteDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
 };

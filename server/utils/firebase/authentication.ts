@@ -1,32 +1,26 @@
+// import auth from firebase-admin
 import { getAuth } from "firebase-admin/auth";
-import { Login, Register } from "~~/types";
+import { Register, Login } from "~~/types";
 
 const auth = getAuth();
-
-// function to create or signUp users
-async function signUp(data: Register) {
+// create the signUp function
+async function signUp({ data }: { data: Register }) {
   try {
-    const createdUser = await auth.createUser({
-      displayName: `${data.firstName.toLowerCase()} ${data.lastName.toLowerCase()}`,
-      email: data.email.toLowerCase(),
+    await auth.createUser({
+      displayName: `${data.firstName} ${data.lastName}`,
       password: data.password,
+      email: data.email,
     });
-
     return {
       data: {
-        id: createdUser.uid,
-        displayName: createdUser.displayName,
-        email: createdUser.email,
+        message: "User has signed up successfully",
       },
     };
   } catch (error) {
-    return {
-      error,
-    };
+    return { error };
   }
 }
-
-// function to singIn users
+// create the signIn function
 async function signIn(data: Login) {
   const { apiKey } = useRuntimeConfig();
   //
