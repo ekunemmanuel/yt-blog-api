@@ -15,7 +15,7 @@ async function getDocs<T>({ collectionName }: { collectionName: string }) {
       } as T;
     });
     return {
-      data,
+      data: { ...data },
     };
   } catch (error) {
     return { error };
