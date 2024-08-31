@@ -4,16 +4,21 @@ import { Register, Login } from "~~/types";
 
 const auth = getAuth();
 // create the signUp function
-async function signUp({ data }: { data: Register }) {
+async function signUp({ email, firstName, lastName, password }: Register) {
   try {
-    await auth.createUser({
-      displayName: `${data.firstName} ${data.lastName}`,
-      password: data.password,
-      email: data.email,
+    const user = await auth.createUser({
+      displayName: `${firstName} ${lastName}`,
+      password: password,
+      email: email,
     });
     return {
       data: {
         message: "User has signed up successfully",
+        user: {
+          id: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+        },
       },
     };
   } catch (error) {
